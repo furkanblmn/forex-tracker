@@ -75,11 +75,6 @@ A modern, responsive web application for tracking real-time forex data with port
    
    The application will start and display the local URL in your terminal.
 
-6. **Build for production**
-   ```bash
-   npm run build
-   npm run preview
-   ```
 
 ## 🏗 Project Structure
 
