@@ -24,7 +24,7 @@
         </DynamicDataTable>
 
         <BuyForexModal :visible="transactionStore.isBuyModalOpen" :selectedPairs="forexStore.selectedPairs"
-            @hide="transactionStore.closeBuyModal()" @buy="handleBuyPairs" />
+            @hide="transactionStore.closeBuyModal()" @buy="handleBuyPairs" @remove-pair="handleRemovePair" />
     </div>
 </template>
 
@@ -51,6 +51,10 @@ const handleBuyPairs = (volumes: Record<string, number>) => {
         }
     });
     forexStore.selectedPairs = [];
+}
+
+const handleRemovePair = (pair: ForexData) => {
+    forexStore.selectedPairs = forexStore.selectedPairs.filter((p: ForexData) => p.pair !== pair.pair);
 }
 
 const tableColumns = computed<TableColumn[]>(() => [
