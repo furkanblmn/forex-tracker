@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+:root {
+    --sidebar-width: 20dvw;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    padding: 1.5rem 1rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.menu-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-list li {
+    margin-bottom: 0.5rem;
+}
+
+.menu-list a {
+    text-decoration: none;
+    color: #495057;
+    padding: 0.75rem 1rem;
+    display: block;
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+    border-radius: 4px;
+}
+
+.menu-list a:hover {
+    color: #1f2937;
+    background-color: #e9ecef;
+}
+
+.menu-list a.active {
+    color: #2563eb;
+    font-weight: bold;
+    background-color: #e9ecef;
+}
+
+.content-area {
+    flex-grow: 1;
+    padding: 2rem;
+    background-color: #ffffff;
+    margin: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Basic text colors that might be needed if not provided by theme */
+.text-success {
+    color: #22c55e;
+    /* Example green */
+}
+
+.text-danger {
+    color: #ef4444;
+    /* Example red */
+}

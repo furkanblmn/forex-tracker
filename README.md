@@ -42,8 +42,8 @@ A modern, responsive web application for tracking real-time forex data with port
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd aegeanlabs-case-study
+   git clone https://github.com/furkanblmn/forex-tracker.git
+   cd forex-tracker
    ```
 
 2. **Install dependencies**
@@ -87,8 +87,8 @@ A modern, responsive web application for tracking real-time forex data with port
 src/
 ├── components/              # Reusable UI components
 │   ├── forex/              # Forex-specific components
-│   │   ├── BuyForexModal.vue    # Buy dialog with volume input
-│   │   └── ErrorDisplay.vue     # Global error display
+│   │   └── BuyForexModal.vue    # Buy dialog with volume input
+│   ├── ErrorDisplay.vue         # Global error display
 │   └── Sidebar.vue             # Navigation sidebar
 ├── composables/            # Vue composition functions
 │   ├── useCommon.ts           # Common utilities & formatting
@@ -96,18 +96,24 @@ src/
 │   ├── useValidation.ts       # Input validation rules
 │   ├── useLocalStorage.ts     # Persistent data storage
 │   ├── useRateLimit.ts        # API rate limiting
-│   └── useMetrics.ts          # Performance monitoring
+│   ├── useMetrics.ts          # Performance monitoring
+│   └── useFinnhub.ts          # Finnhub API integration
 ├── stores/                 # Pinia state management
-│   └── forex.ts              # Main forex store with WebSocket
+│   ├── index.ts              # Store initialization
+│   ├── forexStore.ts         # Real-time forex data
+│   ├── errorStore.ts         # Error state management
+│   ├── portfolioStore.ts     # Portfolio management
+│   ├── transactionStore.ts   # Buy/sell operations
+│   └── exportStore.ts        # CSV export functionality
 ├── services/               # External API services
-│   └── websocket-service.ts   # Finnhub WebSocket integration
+│   └── websocket-service.ts  # Finnhub WebSocket integration
 ├── views/                  # Page components
-│   ├── TrackerView.vue        # Main forex tracking page
-│   └── MyAssetsView.vue       # Portfolio management page
+│   ├── TrackerView.vue       # Main forex tracking page
+│   └── MyAssetsView.vue      # Portfolio management page
 ├── router/                 # Vue Router configuration
-│   └── index.ts
 ├── assets/                 # Static assets
-│   └── css/app.css           # Global styles
+├── types/                  # TypeScript type definitions
+├── plugins/                # Vue plugins
 └── App.vue                 # Root application component
 ```
 
