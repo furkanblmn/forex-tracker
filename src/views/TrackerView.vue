@@ -60,7 +60,7 @@
 <script setup lang="ts">
 import { useForexStore, useTransactionStore } from '@/stores'
 import { useCommon } from '@/composables/useCommon'
-import type { ForexData } from '@/services/websocket-service'
+import type { ForexData } from '@/types'
 import BuyForexModal from '@/components/forex/BuyForexModal.vue'
 
 const forexStore = useForexStore()

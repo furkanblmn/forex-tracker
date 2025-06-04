@@ -1,5 +1,8 @@
 import { ref, computed } from 'vue'
 import type { MetricEvent, PerformanceMetric } from '@/types'
+import { logger } from '@/utils/logger'
+
+const COMPONENT_NAME = 'Metrics'
 
 export const useMetrics = () => {
     const events = ref<MetricEvent[]>([])
@@ -37,10 +40,11 @@ export const useMetrics = () => {
             events.value.splice(0, events.value.length - 500)
         }
 
-        // Log to console in development
-        if (import.meta.env.DEV) {
-            console.log('[Metrics]', event)
-        }
+        logger.debug('Metrics event tracked', {
+            component: COMPONENT_NAME,
+            action: 'trackEvent',
+            data: event
+        })
     }
 
     // Specific tracking methods
@@ -160,7 +164,10 @@ export const useMetrics = () => {
             try {
                 observer.observe({ entryTypes: ['navigation', 'paint'] })
             } catch (e) {
-                console.warn('Performance observer not supported')
+                logger.warn('Performance observer not supported', {
+                    component: COMPONENT_NAME,
+                    action: 'measureWebVitals'
+                })
             }
         }
     }

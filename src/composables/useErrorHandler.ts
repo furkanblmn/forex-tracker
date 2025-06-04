@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import type { AppError } from '@/types'
+import { logger } from '@/utils/logger'
 
 export const useErrorHandler = () => {
     const errors = ref<AppError[]>([])
@@ -15,7 +16,10 @@ export const useErrorHandler = () => {
         errors.value.push(newError)
         hasErrors.value = true
 
-        console.error('[Error Handler]', newError)
+        logger.error('[Error Handler]', newError, {
+            component: 'ErrorHandler',
+            action: 'addError'
+        })
 
         // Auto remove error after 10 seconds for non-critical errors
         if (error.type !== 'websocket') {

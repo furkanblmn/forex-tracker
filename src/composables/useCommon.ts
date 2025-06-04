@@ -1,7 +1,6 @@
 import { computed, type Ref } from 'vue'
 
 export const useCommon = () => {
-
     const formatNumber = (value: number, decimals: number = 2, suffix: string = ''): string => {
         return value.toFixed(decimals) + suffix
     }
