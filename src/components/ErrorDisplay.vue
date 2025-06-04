@@ -34,7 +34,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useErrorStore } from '@/stores'
-import type { AppError } from '@/composables/useErrorHandler'
 
 const errorStore = useErrorStore()
 
@@ -54,6 +53,8 @@ const getErrorClasses = (type: string) => {
             return `${baseClasses} border-yellow-500 text-yellow-800`
         case 'websocket':
             return `${baseClasses} border-red-500 text-red-800`
+        case 'rate_limit':
+            return `${baseClasses} border-purple-500 text-purple-800`
         case 'general':
         default:
             return `${baseClasses} border-red-500 text-red-800`
@@ -68,6 +69,8 @@ const getErrorIcon = (type: string) => {
             return 'pi pi-exclamation-triangle text-yellow-500'
         case 'websocket':
             return 'pi pi-times-circle text-red-500'
+        case 'rate_limit':
+            return 'pi pi-clock text-purple-500'
         case 'general':
         default:
             return 'pi pi-exclamation-circle text-red-500'
@@ -82,6 +85,8 @@ const getErrorTitle = (type: string) => {
             return 'Validation Error'
         case 'websocket':
             return 'Connection Error'
+        case 'rate_limit':
+            return 'Rate Limit Error'
         case 'general':
         default:
             return 'System Error'
@@ -92,6 +97,7 @@ const getErrorTitle = (type: string) => {
 <style scoped>
 .error-container {
     animation: slideIn 0.3s ease-out;
+    z-index: 10100;
 }
 
 @keyframes slideIn {

@@ -1,5 +1,6 @@
 <template>
     <div class="assets-container p-4 md:p-6 bg-white rounded-lg shadow">
+        <ErrorDisplay />
         <div class="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center mb-6 w-full gap-4">
             <h1 class="text-xl md:text-2xl font-semibold text-gray-800">My Assets</h1>
             <Button severity="info" label="Export CSV" icon="pi pi-download" @click="exportStore.exportToCSV"
@@ -55,6 +56,7 @@
 import { computed } from 'vue'
 import { usePortfolioStore, useExportStore } from '@/stores'
 import { useCommon } from '@/composables/useCommon'
+import ErrorDisplay from '@/components/ErrorDisplay.vue'
 
 const portfolioStore = usePortfolioStore()
 const exportStore = useExportStore()

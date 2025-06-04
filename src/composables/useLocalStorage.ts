@@ -1,13 +1,5 @@
 import { ref, watch, type Ref } from 'vue'
-
-export interface StorageOptions {
-    serializer?: {
-        read: (value: string) => any
-        write: (value: any) => string
-    }
-    defaultValue?: any
-    syncAcrossTabs?: boolean
-}
+import type { StorageOptions } from '@/types'
 
 export const useLocalStorage = <T>(key: string, defaultValue?: T, options?: StorageOptions) => {
     const serializer = options?.serializer || {
@@ -59,81 +51,5 @@ export const useLocalStorage = <T>(key: string, defaultValue?: T, options?: Stor
         data,
         remove,
         clear
-    }
-}
-
-// Portfolio persistence
-export const usePortfolioPersistence = () => {
-    const PORTFOLIO_KEY = 'forex_portfolio'
-    const SETTINGS_KEY = 'forex_settings'
-
-    const { data: portfolioData, remove: removePortfolio } = useLocalStorage<any[]>(
-        PORTFOLIO_KEY,
-        [],
-        { syncAcrossTabs: true }
-    )
-
-    const { data: settingsData, remove: removeSettings } = useLocalStorage<any>(
-        SETTINGS_KEY,
-        {
-            autoSave: true,
-            exportFormat: 'csv',
-            maxPortfolioItems: 50
-        },
-        { syncAcrossTabs: true }
-    )
-
-    const savePortfolio = (portfolio: any[]) => {
-        portfolioData.value = portfolio
-    }
-
-    const loadPortfolio = () => {
-        return portfolioData.value || []
-    }
-
-    const saveSettings = (settings: any) => {
-        settingsData.value = { ...settingsData.value, ...settings }
-    }
-
-    const loadSettings = () => {
-        return settingsData.value
-    }
-
-    const clearAllData = () => {
-        removePortfolio()
-        removeSettings()
-    }
-
-    const exportPortfolioHistory = () => {
-        const history = localStorage.getItem('forex_portfolio_history')
-        return history ? JSON.parse(history) : []
-    }
-
-    const savePortfolioHistory = (transaction: any) => {
-        const history = exportPortfolioHistory()
-        history.push({
-            ...transaction,
-            timestamp: Date.now(),
-            id: `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-        })
-
-        // Keep only last 100 transactions
-        if (history.length > 100) {
-            history.splice(0, history.length - 100)
-        }
-
-        localStorage.setItem('forex_portfolio_history', JSON.stringify(history))
-    }
-
-    return {
-        portfolioData,
-        settingsData,
-        savePortfolio,
-        loadPortfolio,
-        saveSettings,
-        loadSettings,
-        clearAllData,
-        exportPortfolioHistory,
-        savePortfolioHistory
     }
 } 

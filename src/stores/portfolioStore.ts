@@ -1,38 +1,54 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
-import type { ForexData } from '@/services/websocket-service'
+import { ref } from 'vue'
 import { useErrorHandler } from '@/composables/useErrorHandler'
-import { useValidation } from '@/composables/useValidation'
-import { usePortfolioPersistence } from '@/composables/useLocalStorage'
 import { useMetrics } from '@/composables/useMetrics'
+import { useValidation } from '@/composables/useValidation'
+import { useLocalStorage } from '@/composables/useLocalStorage'
+import type { ForexData, PortfolioItem, PortfolioHistoryItem } from '@/types'
 
 export const usePortfolioStore = defineStore('portfolio', () => {
-    const portfolio = ref<{ pair: string, price: number, volume: number }[]>([])
+    const portfolio = ref<PortfolioItem[]>([])
     const errorHandler = useErrorHandler()
     const validation = useValidation()
-    const persistence = usePortfolioPersistence()
+    const persistence = useLocalStorage<PortfolioHistoryItem[]>('portfolio_history', [])
     const metrics = useMetrics()
 
     const loadPersistedData = () => {
         try {
-            const savedPortfolio = persistence.loadPortfolio()
-            if (Array.isArray(savedPortfolio)) {
-                portfolio.value = savedPortfolio
-                metrics.trackUserAction('portfolio_loaded', 'persistence', 'success', savedPortfolio.length)
+            const history = persistence.data.value
+            if (history && history.length > 0) {
+                // Reconstruct portfolio from history
+                const portfolioMap = new Map<string, PortfolioItem>()
+                history.forEach(item => {
+                    if (item.type === 'buy') {
+                        const existing = portfolioMap.get(item.pair)
+                        if (existing) {
+                            existing.volume += item.volume
+                        } else {
+                            portfolioMap.set(item.pair, {
+                                pair: item.pair,
+                                price: item.price,
+                                volume: item.volume
+                            })
+                        }
+                    }
+                })
+                portfolio.value = Array.from(portfolioMap.values())
             }
         } catch (error) {
-            errorHandler.handleGeneralError(error, 'Portfolio Loading')
-            metrics.trackError(error as Error, 'persistence')
+            errorHandler.handleGeneralError(error, 'Load Portfolio')
         }
     }
 
-    watch(portfolio, (newPortfolio) => {
+    const savePortfolioHistory = (item: PortfolioHistoryItem) => {
         try {
-            persistence.savePortfolio(newPortfolio)
+            const history = persistence.data.value || []
+            history.push(item)
+            persistence.data.value = history
         } catch (error) {
-            errorHandler.handleGeneralError(error, 'Portfolio Saving')
+            errorHandler.handleGeneralError(error, 'Save Portfolio History')
         }
-    }, { deep: true })
+    }
 
     const addToPortfolio = (forexPair: ForexData, volume: number) => {
         try {
@@ -66,7 +82,7 @@ export const usePortfolioStore = defineStore('portfolio', () => {
                 metrics.trackUserAction('portfolio_item_added', 'portfolio', forexPair.pair, volume)
             }
 
-            persistence.savePortfolioHistory({
+            savePortfolioHistory({
                 type: 'buy',
                 pair: forexPair.pair,
                 price: forexPair.price,
@@ -94,7 +110,7 @@ export const usePortfolioStore = defineStore('portfolio', () => {
 
             metrics.trackUserAction('portfolio_item_removed', 'portfolio', removedItem.pair)
 
-            persistence.savePortfolioHistory({
+            savePortfolioHistory({
                 type: 'remove',
                 pair: removedItem.pair,
                 price: removedItem.price,

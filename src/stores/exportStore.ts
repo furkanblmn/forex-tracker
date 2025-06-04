@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useErrorStore } from '@/stores'
 import { useExportRateLimit } from '@/composables/useRateLimit'
 import { useMetrics } from '@/composables/useMetrics'
 import { usePortfolioStore } from './portfolioStore'
 
 export const useExportStore = defineStore('export', () => {
-    const errorHandler = useErrorHandler()
+    const errorStore = useErrorStore()
     const exportRateLimit = useExportRateLimit()
     const metrics = useMetrics()
     const portfolioStore = usePortfolioStore()
@@ -13,7 +13,7 @@ export const useExportStore = defineStore('export', () => {
     const exportToCSV = () => {
         try {
             if (!exportRateLimit.addRequest()) {
-                errorHandler.handleValidationError(
+                errorStore.handleRateLimitError(
                     'Export rate limit exceeded',
                     `Please wait ${Math.ceil((exportRateLimit.getResetTime() || 0) / 1000)} seconds before exporting again`
                 )
@@ -21,7 +21,7 @@ export const useExportStore = defineStore('export', () => {
             }
 
             if (portfolioStore.portfolio.length === 0) {
-                errorHandler.handleValidationError('No data to export')
+                errorStore.handleValidationError('No data to export')
                 return false
             }
 
@@ -51,7 +51,7 @@ export const useExportStore = defineStore('export', () => {
             metrics.trackUserAction('csv_exported', 'export', 'portfolio', portfolioStore.portfolio.length)
             return true
         } catch (error) {
-            errorHandler.handleGeneralError(error, 'CSV Export')
+            errorStore.handleValidationError('Export failed', 'There was an error while exporting your portfolio data')
             metrics.trackError(error as Error, 'export')
             return false
         }
@@ -64,9 +64,6 @@ export const useExportStore = defineStore('export', () => {
     initialize()
 
     return {
-        errors: errorHandler.errors,
-        hasErrors: errorHandler.hasErrors,
-        exportToCSV,
-        clearErrors: errorHandler.clearErrors
+        exportToCSV
     }
 }) 

@@ -1,15 +1,5 @@
 import { ref } from 'vue'
-import type { ForexData } from '@/services/websocket-service'
-
-export interface ValidationRule {
-    validator: (value: any) => boolean
-    message: string
-}
-
-export interface ValidationResult {
-    isValid: boolean
-    errors: string[]
-}
+import type { ValidationRule, ValidationResult, ForexData } from '@/types'
 
 export const useValidation = () => {
     const validationErrors = ref<Record<string, string[]>>({})

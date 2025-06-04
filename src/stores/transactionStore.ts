@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { ForexData } from '@/services/websocket-service'
+import type { ForexData } from '@/types'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import { useValidation } from '@/composables/useValidation'
 import { useBuyActionRateLimit } from '@/composables/useRateLimit'

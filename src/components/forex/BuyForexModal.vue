@@ -10,13 +10,6 @@
                     class="volume-input mt-1 block flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" />
             </div>
         </div>
-        <div v-if="visibleErrors.length > 0" class="px-6">
-            <div v-for="error in visibleErrors" :key="error.id"
-                class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-2">
-                <strong class="font-bold">{{ error.message }}</strong>
-                <span v-if="error.details" class="block sm:inline"> - {{ error.details }}</span>
-            </div>
-        </div>
         <template #footer>
             <div class="px-6 py-4 text-right">
                 <Button label="Cancel" icon="pi pi-times" severity="info" @click="handleCancel"
@@ -30,8 +23,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
-import type { ForexData } from '@/services/websocket-service'
-import { useErrorHandler } from '@/composables/useErrorHandler'
+import type { ForexData } from '@/types'
+import { useErrorStore } from '@/stores'
 
 const props = defineProps({
     visible: { type: Boolean, required: true },
@@ -39,7 +32,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['hide', 'buy'])
-const errorHandler = useErrorHandler()
+const errorStore = useErrorStore()
 const buyVolumes = ref<Record<string, number>>({})
 
 const canBuy = computed(() => {
@@ -50,14 +43,14 @@ const canBuy = computed(() => {
 })
 
 const handleCancel = () => {
-    errorHandler.clearErrors();
+    errorStore.clearErrors();
     emit('hide');
 }
 
 const buySelectedPairs = () => {
     if (!canBuy.value) {
-        errorHandler.clearErrors();
-        errorHandler.handleValidationError(
+        errorStore.clearErrors();
+        errorStore.handleValidationError(
             'Please enter valid volume values for all selected pairs'
         );
         return;
@@ -70,14 +63,14 @@ const buySelectedPairs = () => {
         return acc;
     }, {} as Record<string, number>);
 
-    errorHandler.clearErrors();
+    errorStore.clearErrors();
     emit('buy', validVolumes);
     emit('hide');
     buyVolumes.value = {};
 }
 
 const initializeBuyVolumes = () => {
-    errorHandler.clearErrors();
+    errorStore.clearErrors();
     buyVolumes.value = {};
     props.selectedPairs.forEach(pair => {
         buyVolumes.value[pair.pair] = 0;
@@ -92,10 +85,7 @@ watch(() => props.selectedPairs, (newPairs) => {
     buyVolumes.value = newBuyVolumes;
 }, { deep: true });
 
-const visibleErrors = computed(() => (errorHandler.errors.value || []).filter((e: { message?: string }) => e.message));
-
 onUnmounted(() => {
-    errorHandler.clearErrors();
+    errorStore.clearErrors();
 })
-
 </script>

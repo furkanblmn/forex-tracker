@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useErrorHandler } from '@/composables/useErrorHandler'
-import type { AppError } from '@/composables/useErrorHandler'
+import type { AppError } from '@/types'
 
 export const useErrorStore = defineStore('error', () => {
     const errorHandler = useErrorHandler()
@@ -13,10 +13,25 @@ export const useErrorStore = defineStore('error', () => {
         }
     }
 
+    const handleValidationError = (message: string, details?: string) => {
+        errorHandler.handleValidationError(message, details)
+    }
+
+    const handleRateLimitError = (message: string, details?: string) => {
+        errorHandler.addError({
+            type: 'rate_limit',
+            message,
+            details,
+            source: 'Rate Limit'
+        })
+    }
+
     return {
         errors: errorHandler.errors,
         hasErrors: errorHandler.hasErrors,
         removeError,
-        clearErrors: errorHandler.clearErrors
+        clearErrors: errorHandler.clearErrors,
+        handleValidationError,
+        handleRateLimitError
     }
 }) 

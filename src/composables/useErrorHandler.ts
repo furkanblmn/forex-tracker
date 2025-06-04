@@ -1,13 +1,5 @@
 import { ref } from 'vue'
-
-export interface AppError {
-    id: string
-    type: 'network' | 'validation' | 'websocket' | 'general'
-    message: string
-    details?: string
-    timestamp: number
-    source?: string
-}
+import type { AppError } from '@/types'
 
 export const useErrorHandler = () => {
     const errors = ref<AppError[]>([])
@@ -23,7 +15,6 @@ export const useErrorHandler = () => {
         errors.value.push(newError)
         hasErrors.value = true
 
-        // Log error for monitoring
         console.error('[Error Handler]', newError)
 
         // Auto remove error after 10 seconds for non-critical errors

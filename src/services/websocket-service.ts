@@ -1,4 +1,5 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import type { ForexData, WebSocketTrade } from '@/types'
 
 // API anahtarını buradan okuyun
 const API_KEY = import.meta.env.VITE_FINNHUB_API_KEY
@@ -9,14 +10,6 @@ if (!API_KEY) {
 
 const WS_URL = `wss://ws.finnhub.io?token=${API_KEY}`
 const REST_URL = `https://finnhub.io/api/v1`
-
-export interface ForexData {
-    pair: string
-    price: number
-    change: number
-    volume: number
-    lastUpdate: string
-}
 
 export const useWebSocketService = () => {
     const forexDataMap = ref<Record<string, ForexData>>({})
@@ -145,7 +138,6 @@ export const useWebSocketService = () => {
                         const msg = { type: 'subscribe', symbol: symbol }
                         ws.value?.send(JSON.stringify(msg))
                     })
-                    console.log(`Toplam ${symbolsToSubscribe.length} adet sembol bulundu`);
                 } else {
                     console.log('WebSocket bağlantısı henüz açık değil, sembollere abone olunamadı.');
                 }

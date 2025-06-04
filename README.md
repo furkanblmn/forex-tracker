@@ -18,7 +18,6 @@ A modern, responsive web application for tracking real-time forex data with port
 - **Data Validation**: Input validation for volume and forex data
 - **Local Storage**: Persistent data with cross-tab synchronization
 - **Performance Monitoring**: Metrics tracking and performance optimization
-- **Debounced Input**: 300ms debounce for better UX
 - **Dynamic Scroll Height**: Responsive table heights based on viewport
 
 ## 🛠 Technologies Used
@@ -75,7 +74,6 @@ A modern, responsive web application for tracking real-time forex data with port
    
    The application will start and display the local URL in your terminal.
 
-
 ## 🏗 Project Structure
 
 ```
@@ -94,7 +92,7 @@ src/
 │   ├── useMetrics.ts          # Performance monitoring
 │   └── useFinnhub.ts          # Finnhub API integration
 ├── stores/                 # Pinia state management
-│   ├── index.ts              # Store initialization
+│   ├── index.ts              # Store exports
 │   ├── forexStore.ts         # Real-time forex data
 │   ├── errorStore.ts         # Error state management
 │   ├── portfolioStore.ts     # Portfolio management
@@ -106,9 +104,20 @@ src/
 │   ├── TrackerView.vue       # Main forex tracking page
 │   └── MyAssetsView.vue      # Portfolio management page
 ├── router/                 # Vue Router configuration
+│   └── index.ts             # Router configuration and routes
 ├── assets/                 # Static assets
+│   └── css/                # Global styles
+│       └── app.css         # Main stylesheet
 ├── types/                  # TypeScript type definitions
+│   ├── index.ts            # Type exports
+│   ├── metrics.types.ts    # Metrics related types
+│   ├── validation.types.ts # Validation related types
+│   ├── websocket.types.ts  # WebSocket related types
+│   ├── portfolio.types.ts  # Portfolio related types
+│   ├── error.types.ts      # Error related types
+│   └── storage.types.ts    # Storage related types
 ├── plugins/                # Vue plugins
+│   └── primevue.ts         # PrimeVue configuration
 └── App.vue                 # Root application component
 ```
 
@@ -127,7 +136,6 @@ src/
 3. **Purchase Simulation**:
    - Click "Buy" button to open purchase modal
    - Enter volume amounts for each selected pair
-   - Debounced input validation (300ms delay)
    - Confirm to add to your portfolio
 
 ### My Assets Portfolio Page
@@ -139,15 +147,6 @@ src/
 2. **Export Data**:
    - Click "Export CSV" to download portfolio data
    - Includes all transaction history and current values
-
-3. **Remove Assets**:
-   - Use trash icon to remove individual positions
-   - Portfolio summary updates automatically
-
-### Navigation
-- **Sidebar Menu**: Fixed left navigation with Tracker and My Assets
-- **Responsive Design**: Mobile-friendly collapsible menu
-- **Active States**: Current page highlighted
 
 ## ⚡ Key Features Implemented
 
@@ -216,7 +215,6 @@ Built-in performance monitoring includes:
 - **Mobile-First**: Optimized for mobile devices
 - **Tablet Support**: Adaptive layouts for medium screens
 - **Desktop Experience**: Full-featured desktop interface
-- **Touch-Friendly**: Large tap targets and touch gestures
 
 ## 🔒 Security Features
 
