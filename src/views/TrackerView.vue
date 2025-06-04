@@ -12,45 +12,16 @@
             {{ forexStore.error }}
         </div>
 
-        <DataTable v-model:selection="forexStore.selectedPairs" :value="forexStore.forexData" stripedRows
-            selectionMode="multiple" dataKey="pair" class="p-datatable-sm w-full"
-            tableClass="min-w-full divide-y divide-gray-200" :scrollable="forexStore.forexData.length > 8"
-            :scrollHeight="dynamicScrollHeight"
-            :virtualScrollerOptions="forexStore.forexData.length > 20 ? { itemSize: 46 } : undefined"
-            responsiveLayout="scroll">
-            <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-            <Column field="pair" header="Pair" sortable headerStyle="width: 20%"
-                class="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></Column>
-            <Column field="price" header="Price" sortable headerStyle="width: 20%"
-                class="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <template #body="{ data }">
-                    {{ formatNumber(data.price, 5) }}
-                </template>
-            </Column>
-            <Column field="change" header="Change" sortable headerStyle="width: 20%"
-                class="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <template #body="{ data }">
-                    <span :class="getChangeColorClass(data.change)">
-                        {{ formatNumber(data.change, 3, '%') }}
-                    </span>
-                </template>
-            </Column>
-            <Column field="volume" header="Volume" sortable headerStyle="width: 20%"
-                class="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></Column>
-            <Column field="lastUpdate" header="Last Update" sortable headerStyle="width: 20%"
-                class="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <template #body="{ data }">
-                    {{ data.lastUpdate }}
-                </template>
-            </Column>
-            <template #empty>
-                <div class="text-center text-gray-500" style="padding: 48px 0;">
-                    <span v-if="!forexStore.isConnected">Connecting...</span>
-                    <span v-else-if="forexStore.forexData.length === 0">Loading data...</span>
-                    <span v-else>No records found</span>
-                </div>
+        <DynamicDataTable v-model="forexStore.selectedPairs" :data="forexStore.forexData" :columns="tableColumns"
+            :scrollHeight="dynamicScrollHeight" :virtualScroll="true" :stripedRows="true" selectionMode="multiple"
+            dataKey="pair" :emptyStates="emptyStates" :formatNumber="formatNumber"
+            :getChangeColorClass="getChangeColorClass">
+            <template #body-change="{ value, data }">
+                <span :class="getChangeColorClass(data.change)">
+                    {{ formatNumber(value, 3, '%') }}
+                </span>
             </template>
-        </DataTable>
+        </DynamicDataTable>
 
         <BuyForexModal :visible="transactionStore.isBuyModalOpen" :selectedPairs="forexStore.selectedPairs"
             @hide="transactionStore.closeBuyModal()" @buy="handleBuyPairs" />
@@ -58,10 +29,13 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useForexStore, useTransactionStore } from '@/stores'
 import { useCommon } from '@/composables/useCommon'
 import type { ForexData } from '@/types'
+import type { TableColumn, TableEmptyState } from '@/types'
 import BuyForexModal from '@/components/forex/BuyForexModal.vue'
+import DynamicDataTable from '@/components/tables/DynamicDataTable.vue'
 
 const forexStore = useForexStore()
 const transactionStore = useTransactionStore()
@@ -78,6 +52,66 @@ const handleBuyPairs = (volumes: Record<string, number>) => {
     });
     forexStore.selectedPairs = [];
 }
+
+const tableColumns = computed<TableColumn[]>(() => [
+    {
+        field: 'pair',
+        header: 'Pair',
+        sortable: true,
+        headerStyle: 'width: 20%',
+        type: 'text'
+    },
+    {
+        field: 'price',
+        header: 'Price',
+        sortable: true,
+        headerStyle: 'width: 20%',
+        type: 'number',
+        format: {
+            decimals: 5
+        }
+    },
+    {
+        field: 'change',
+        header: 'Change',
+        sortable: true,
+        headerStyle: 'width: 20%',
+        type: 'number',
+        format: {
+            decimals: 3,
+            isPercentage: true
+        }
+    },
+    {
+        field: 'volume',
+        header: 'Volume',
+        sortable: true,
+        headerStyle: 'width: 20%',
+        type: 'text'
+    },
+    {
+        field: 'lastUpdate',
+        header: 'Last Update',
+        sortable: true,
+        headerStyle: 'width: 20%',
+        type: 'text'
+    }
+])
+
+const emptyStates = computed<TableEmptyState[]>(() => [
+    {
+        message: 'Connecting...',
+        condition: () => !forexStore.isConnected
+    },
+    {
+        message: 'Loading data...',
+        condition: () => forexStore.isConnected && forexStore.forexData.length === 0
+    },
+    {
+        message: 'No records found',
+        condition: () => forexStore.isConnected && forexStore.forexData.length > 0
+    }
+])
 </script>
 
 <style scoped>

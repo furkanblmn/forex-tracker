@@ -13,6 +13,7 @@ A modern, responsive web application for tracking real-time forex data with port
 
 ### Advanced Features
 - **Global State Management**: Optimized Pinia store with WebSocket management
+- **Dynamic Table Component**: Reusable, configurable data table with sorting, filtering, and actions
 - **Error Handling**: Comprehensive error system with different error types
 - **Rate Limiting**: API protection with configurable limits
 - **Data Validation**: Input validation for volume and forex data
@@ -79,6 +80,8 @@ A modern, responsive web application for tracking real-time forex data with port
 ```
 src/
 ├── components/              # Reusable UI components
+│   ├── tables/             # Table components
+│   │   └── DynamicDataTable.vue # Reusable dynamic data table
 │   ├── forex/              # Forex-specific components
 │   │   └── BuyForexModal.vue    # Buy dialog with volume input
 │   ├── ErrorDisplay.vue         # Global error display
@@ -101,8 +104,8 @@ src/
 ├── services/               # External API services
 │   └── websocket-service.ts  # Finnhub WebSocket integration
 ├── views/                  # Page components
-│   ├── TrackerView.vue       # Main forex tracking page
-│   └── MyAssetsView.vue      # Portfolio management page
+│   ├── TrackerView.vue       # Main forex tracking page (uses DynamicDataTable)
+│   └── MyAssetsView.vue      # Portfolio management page (uses DynamicDataTable)
 ├── router/                 # Vue Router configuration
 │   └── index.ts             # Router configuration and routes
 ├── assets/                 # Static assets
@@ -110,6 +113,7 @@ src/
 │       └── app.css         # Main stylesheet
 ├── types/                  # TypeScript type definitions
 │   ├── index.ts            # Type exports
+│   ├── table.types.ts      # Table component related types
 │   ├── metrics.types.ts    # Metrics related types
 │   ├── validation.types.ts # Validation related types
 │   ├── websocket.types.ts  # WebSocket related types
@@ -159,6 +163,7 @@ src/
 
 ### Advanced Features
 - ✅ **Global WebSocket Management**: Single connection optimization
+- ✅ **Dynamic Table Component**: Reusable DynamicDataTable with TypeScript support
 - ✅ **Error Handling**: Comprehensive error system with types
 - ✅ **Rate Limiting**: API protection (10 buys/min, 5 exports/min)
 - ✅ **Data Validation**: Volume limits (0-1M, 2 decimals max)
@@ -226,10 +231,11 @@ Built-in performance monitoring includes:
 ## 🧪 Development
 
 ### Code Quality
-- **TypeScript**: Full type safety
+- **TypeScript**: Full type safety with comprehensive interfaces
 - **ESLint**: Code linting and formatting
-- **Component Architecture**: Modular, reusable components
-- **Composition API**: Modern Vue 3 patterns
+- **Component Architecture**: Modular, reusable components with clean separation of concerns
+- **Composition API**: Modern Vue 3 patterns with composables
+- **Dynamic Components**: Configurable table component with slot-based customization
 
 ### Performance Monitoring
 - **Metrics Tracking**: Built-in performance monitoring

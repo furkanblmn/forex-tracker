@@ -8,40 +8,16 @@
                 class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded inline-flex items-center w-full sm:w-auto justify-center" />
         </div>
 
-        <DataTable :value="portfolioStore.portfolio" class="p-datatable-sm w-full"
-            tableClass="min-w-full divide-y divide-gray-200" :scrollable="portfolioStore.portfolio.length > 8"
-            :scrollHeight="dynamicScrollHeight"
-            :virtualScrollerOptions="portfolioStore.portfolio.length > 20 ? { itemSize: 46 } : undefined"
-            responsiveLayout="scroll">
-            <Column field="pair" header="Pair" sortable headerStyle="width: 25%"
-                class="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></Column>
-            <Column field="price" header="Price" sortable headerStyle="width: 25%"
-                class="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <template #body="{ data }">
-                    {{ formatNumber(data.price, 5) }}
-                </template>
-            </Column>
-            <Column field="volume" header="Volume" sortable headerStyle="width: 20%"
-                class="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></Column>
-            <Column header="Total Value" sortable headerStyle="width: 20%"
-                class="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <template #body="{ data }">
-                    {{ formatNumber(data.price * data.volume, 2) }}
-                </template>
-            </Column>
-            <Column header="Actions" headerStyle="width: 10%"
-                class="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <template #body="{ data, index }">
-                    <Button icon="pi pi-trash" class="p-button-danger p-button-text text-red-600 hover:text-red-800"
-                        severity="danger" @click="portfolioStore.removeFromPortfolio(index)" />
-                </template>
-            </Column>
-            <template #empty>
-                <div class="text-center text-gray-500 bg-gray-50 py-6">
-                    No records found
-                </div>
+        <DynamicDataTable :data="portfolioStore.portfolio" :columns="tableColumns" :actions="tableActions"
+            :scrollHeight="dynamicScrollHeight" :virtualScroll="true" :formatNumber="formatNumber">
+            <template #body-price="{ value }">
+                {{ formatNumber(value, 5) }}
             </template>
-        </DataTable>
+
+            <template #body-total_value="{ data }">
+                {{ formatNumber(data.price * data.volume, 2) }}
+            </template>
+        </DynamicDataTable>
 
         <div class="mt-6 p-4 bg-gray-100 rounded-lg" v-if="portfolioStore.portfolio.length">
             <h2 class="text-xl font-semibold mb-2 text-gray-800">Portfolio Summary</h2>
@@ -57,6 +33,8 @@ import { computed } from 'vue'
 import { usePortfolioStore, useExportStore } from '@/stores'
 import { useCommon } from '@/composables/useCommon'
 import ErrorDisplay from '@/components/ErrorDisplay.vue'
+import DynamicDataTable from '@/components/tables/DynamicDataTable.vue'
+import type { TableColumn, TableAction } from '@/types'
 
 const portfolioStore = usePortfolioStore()
 const exportStore = useExportStore()
@@ -67,4 +45,46 @@ const dynamicScrollHeight = useDynamicScrollHeight(() => portfolioStore.portfoli
 const totalValue = computed(() => {
     return calculateTotalValue(portfolioStore.portfolio)
 })
+
+const tableColumns = computed<TableColumn[]>(() => [
+    {
+        field: 'pair',
+        header: 'Pair',
+        sortable: true,
+        headerStyle: 'width: 25%',
+        type: 'text'
+    },
+    {
+        field: 'price',
+        header: 'Price',
+        sortable: true,
+        headerStyle: 'width: 25%',
+        type: 'number'
+    },
+    {
+        field: 'volume',
+        header: 'Volume',
+        sortable: true,
+        headerStyle: 'width: 20%',
+        type: 'text'
+    },
+    {
+        field: 'total_value',
+        header: 'Total Value',
+        sortable: true,
+        headerStyle: 'width: 20%',
+        type: 'custom'
+    }
+])
+
+const tableActions = computed<TableAction[]>(() => [
+    {
+        icon: 'pi pi-trash',
+        severity: 'danger',
+        class: 'p-button-danger p-button-text text-red-600 hover:text-red-800',
+        onClick: (data: any, index: number) => {
+            portfolioStore.removeFromPortfolio(index)
+        }
+    }
+])
 </script>
