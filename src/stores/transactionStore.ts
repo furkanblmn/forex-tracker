@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { ForexData } from '@/types'
-import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useErrorStore } from './errorStore'
 import { useValidation } from '@/composables/useValidation'
 import { useBuyActionRateLimit } from '@/composables/useRateLimit'
 import { useMetrics } from '@/composables/useMetrics'
@@ -9,7 +9,7 @@ import { usePortfolioStore } from './portfolioStore'
 
 export const useTransactionStore = defineStore('transaction', () => {
     const isBuyModalOpen = ref(false)
-    const errorHandler = useErrorHandler()
+    const errorStore = useErrorStore()
     const validation = useValidation()
     const buyRateLimit = useBuyActionRateLimit()
     const metrics = useMetrics()
@@ -19,7 +19,7 @@ export const useTransactionStore = defineStore('transaction', () => {
         const validationResult = validation.validatePairSelection(selectedPairs)
         if (!validationResult.isValid) {
             validationResult.errors.forEach(error => {
-                errorHandler.handleValidationError(error)
+                errorStore.handleValidationError(error)
             })
             return false
         }
@@ -37,7 +37,7 @@ export const useTransactionStore = defineStore('transaction', () => {
     const executeBuy = (forexPair: ForexData, volume: number) => {
         try {
             if (!buyRateLimit.addRequest()) {
-                errorHandler.handleValidationError(
+                errorStore.handleRateLimitError(
                     'Rate limit exceeded',
                     `Please wait ${Math.ceil((buyRateLimit.getResetTime() || 0) / 1000)} seconds before making another purchase`
                 )
@@ -46,7 +46,7 @@ export const useTransactionStore = defineStore('transaction', () => {
 
             return portfolioStore.addToPortfolio(forexPair, volume)
         } catch (error) {
-            errorHandler.handleGeneralError(error, 'Buy Transaction')
+            errorStore.handleGeneralError(error, 'Buy Transaction')
             metrics.trackError(error as Error, 'transaction')
             return false
         }
@@ -60,13 +60,13 @@ export const useTransactionStore = defineStore('transaction', () => {
 
     return {
         isBuyModalOpen,
-        errors: errorHandler.errors,
-        hasErrors: errorHandler.hasErrors,
+        errors: errorStore.errors,
+        hasErrors: errorStore.hasErrors,
         validationErrors: validation.validationErrors,
         openBuyModal,
         closeBuyModal,
         executeBuy,
-        clearErrors: errorHandler.clearErrors,
+        clearErrors: errorStore.clearErrors,
         clearValidationErrors: validation.clearValidationErrors
     }
 }) 

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useErrorStore } from './errorStore'
 import { useMetrics } from '@/composables/useMetrics'
 import { useValidation } from '@/composables/useValidation'
 import { useLocalStorage } from '@/composables/useLocalStorage'
@@ -8,7 +8,7 @@ import type { ForexData, PortfolioItem, PortfolioHistoryItem } from '@/types'
 
 export const usePortfolioStore = defineStore('portfolio', () => {
     const portfolio = ref<PortfolioItem[]>([])
-    const errorHandler = useErrorHandler()
+    const errorStore = useErrorStore()
     const validation = useValidation()
     const persistence = useLocalStorage<PortfolioHistoryItem[]>('portfolio_history', [])
     const metrics = useMetrics()
@@ -36,7 +36,7 @@ export const usePortfolioStore = defineStore('portfolio', () => {
                 portfolio.value = Array.from(portfolioMap.values())
             }
         } catch (error) {
-            errorHandler.handleGeneralError(error, 'Load Portfolio')
+            errorStore.handleGeneralError(error, 'Load Portfolio')
         }
     }
 
@@ -46,7 +46,7 @@ export const usePortfolioStore = defineStore('portfolio', () => {
             history.push(item)
             persistence.data.value = history
         } catch (error) {
-            errorHandler.handleGeneralError(error, 'Save Portfolio History')
+            errorStore.handleGeneralError(error, 'Save Portfolio History')
         }
     }
 
@@ -55,7 +55,7 @@ export const usePortfolioStore = defineStore('portfolio', () => {
             const volumeValidation = validation.validateVolume(volume)
             if (!volumeValidation.isValid) {
                 volumeValidation.errors.forEach(error => {
-                    errorHandler.handleValidationError(error)
+                    errorStore.handleValidationError(error)
                 })
                 return false
             }
@@ -63,7 +63,7 @@ export const usePortfolioStore = defineStore('portfolio', () => {
             const forexValidation = validation.validateForexData(forexPair)
             if (!forexValidation.isValid) {
                 forexValidation.errors.forEach(error => {
-                    errorHandler.handleValidationError(error)
+                    errorStore.handleValidationError(error)
                 })
                 return false
             }
@@ -92,7 +92,7 @@ export const usePortfolioStore = defineStore('portfolio', () => {
 
             return true
         } catch (error) {
-            errorHandler.handleGeneralError(error, 'Add to Portfolio')
+            errorStore.handleGeneralError(error, 'Add to Portfolio')
             metrics.trackError(error as Error, 'portfolio')
             return false
         }
@@ -101,7 +101,7 @@ export const usePortfolioStore = defineStore('portfolio', () => {
     const removeFromPortfolio = (index: number) => {
         try {
             if (index < 0 || index >= portfolio.value.length) {
-                errorHandler.handleValidationError('Invalid portfolio item index')
+                errorStore.handleValidationError('Invalid portfolio item index')
                 return false
             }
 
@@ -119,7 +119,7 @@ export const usePortfolioStore = defineStore('portfolio', () => {
 
             return true
         } catch (error) {
-            errorHandler.handleGeneralError(error, 'Remove from Portfolio')
+            errorStore.handleGeneralError(error, 'Remove from Portfolio')
             return false
         }
     }
@@ -133,12 +133,12 @@ export const usePortfolioStore = defineStore('portfolio', () => {
 
     return {
         portfolio,
-        errors: errorHandler.errors,
-        hasErrors: errorHandler.hasErrors,
+        errors: errorStore.errors,
+        hasErrors: errorStore.hasErrors,
         validationErrors: validation.validationErrors,
         addToPortfolio,
         removeFromPortfolio,
-        clearErrors: errorHandler.clearErrors,
+        clearErrors: errorStore.clearErrors,
         clearValidationErrors: validation.clearValidationErrors
     }
 }) 

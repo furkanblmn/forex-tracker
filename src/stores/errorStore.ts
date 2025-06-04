@@ -1,16 +1,20 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useErrorHandler } from '@/composables/useErrorHandler'
-import type { AppError } from '@/types'
 
 export const useErrorStore = defineStore('error', () => {
     const errorHandler = useErrorHandler()
 
+    // Reactive computed properties for errors
+    const errors = computed(() => errorHandler.errors)
+    const hasErrors = computed(() => errorHandler.hasErrors)
+
     const removeError = (errorId: string) => {
-        const errorIndex = errorHandler.errors.value.findIndex((error: AppError) => error.id === errorId)
-        if (errorIndex !== -1) {
-            errorHandler.errors.value.splice(errorIndex, 1)
-        }
+        errorHandler.removeError(errorId)
+    }
+
+    const clearErrors = () => {
+        errorHandler.clearErrors()
     }
 
     const handleValidationError = (message: string, details?: string) => {
@@ -18,20 +22,30 @@ export const useErrorStore = defineStore('error', () => {
     }
 
     const handleRateLimitError = (message: string, details?: string) => {
-        errorHandler.addError({
-            type: 'rate_limit',
-            message,
-            details,
-            source: 'Rate Limit'
-        })
+        errorHandler.handleRateLimitError(message, details)
+    }
+
+    const handleNetworkError = (error: any, source?: string) => {
+        errorHandler.handleNetworkError(error, source)
+    }
+
+    const handleWebSocketError = (error: any, source?: string) => {
+        errorHandler.handleWebSocketError(error, source)
+    }
+
+    const handleGeneralError = (error: any, source?: string) => {
+        errorHandler.handleGeneralError(error, source)
     }
 
     return {
-        errors: errorHandler.errors,
-        hasErrors: errorHandler.hasErrors,
+        errors,
+        hasErrors,
         removeError,
-        clearErrors: errorHandler.clearErrors,
+        clearErrors,
         handleValidationError,
-        handleRateLimitError
+        handleRateLimitError,
+        handleNetworkError,
+        handleWebSocketError,
+        handleGeneralError
     }
 }) 

@@ -1,11 +1,17 @@
-import { ref } from 'vue'
+import { reactive } from 'vue'
 import type { AppError } from '@/types'
 import { logger } from '@/utils/logger'
 
-export const useErrorHandler = () => {
-    const errors = ref<AppError[]>([])
-    const hasErrors = ref(false)
+// Global reactive error state
+const globalErrorState = reactive<{
+    errors: AppError[]
+    hasErrors: boolean
+}>({
+    errors: [],
+    hasErrors: false
+})
 
+export const useErrorHandler = () => {
     const addError = (error: Omit<AppError, 'id' | 'timestamp'>) => {
         const newError: AppError = {
             ...error,
@@ -13,8 +19,8 @@ export const useErrorHandler = () => {
             timestamp: Date.now()
         }
 
-        errors.value.push(newError)
-        hasErrors.value = true
+        globalErrorState.errors.push(newError)
+        globalErrorState.hasErrors = true
 
         logger.error('[Error Handler]', newError, {
             component: 'ErrorHandler',
@@ -28,16 +34,16 @@ export const useErrorHandler = () => {
     }
 
     const removeError = (errorId: string) => {
-        const index = errors.value.findIndex(error => error.id === errorId)
+        const index = globalErrorState.errors.findIndex(error => error.id === errorId)
         if (index !== -1) {
-            errors.value.splice(index, 1)
-            hasErrors.value = errors.value.length > 0
+            globalErrorState.errors.splice(index, 1)
+            globalErrorState.hasErrors = globalErrorState.errors.length > 0
         }
     }
 
     const clearErrors = () => {
-        errors.value = []
-        hasErrors.value = false
+        globalErrorState.errors.length = 0
+        globalErrorState.hasErrors = false
     }
 
     const handleWebSocketError = (error: any, source: string = 'WebSocket') => {
@@ -67,6 +73,15 @@ export const useErrorHandler = () => {
         })
     }
 
+    const handleRateLimitError = (message: string, details?: string) => {
+        addError({
+            type: 'rate_limit',
+            message,
+            details,
+            source: 'Rate Limit'
+        })
+    }
+
     const handleGeneralError = (error: any, source: string = 'Application') => {
         addError({
             type: 'general',
@@ -77,14 +92,15 @@ export const useErrorHandler = () => {
     }
 
     return {
-        errors,
-        hasErrors,
+        get errors() { return globalErrorState.errors },
+        get hasErrors() { return globalErrorState.hasErrors },
         addError,
         removeError,
         clearErrors,
         handleWebSocketError,
         handleNetworkError,
         handleValidationError,
+        handleRateLimitError,
         handleGeneralError
     }
 } 
