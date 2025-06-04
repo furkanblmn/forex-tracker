@@ -3,16 +3,23 @@
         @show="initializeBuyVolumes" :closable="false" class="bg-white rounded-lg shadow-xl">
         <div class="p-6">
             <div v-for="pair in selectedPairs" :key="pair.pair" class="pair-volume-item flex items-center mb-4">
-                <label :for="pair.pair" class="volume-label block text-sm font-medium text-gray-700 w-44 mr-4">{{
-                    pair.pair
-                }} Volume:</label>
+                <label :for="pair.pair" class="volume-label block text-sm font-medium text-gray-700 w-44 mr-4">
+                    {{ pair.pair }} Volume:
+                </label>
                 <InputNumber v-model="buyVolumes[pair.pair]" :id="pair.pair" :min="0" :step="0.01"
                     class="volume-input mt-1 block flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" />
             </div>
         </div>
+        <div v-if="visibleErrors.length > 0" class="px-6">
+            <div v-for="error in visibleErrors" :key="error.id"
+                class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-2">
+                <strong class="font-bold">{{ error.message }}</strong>
+                <span v-if="error.details" class="block sm:inline"> - {{ error.details }}</span>
+            </div>
+        </div>
         <template #footer>
             <div class="px-6 py-4 text-right">
-                <Button label="Cancel" icon="pi pi-times" severity="info" @click="emit('hide')"
+                <Button label="Cancel" icon="pi pi-times" severity="info" @click="handleCancel"
                     class="p-button-text text-gray-700 hover:text-gray-900 mr-2" />
                 <Button label="Buy" icon="pi pi-check" @click="buySelectedPairs" :disabled="!canBuy"
                     class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center" />
@@ -24,6 +31,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import type { ForexData } from '@/services/websocket-service'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 
 const props = defineProps({
     visible: { type: Boolean, required: true },
@@ -31,24 +39,49 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['hide', 'buy'])
-
+const errorHandler = useErrorHandler()
 const buyVolumes = ref<Record<string, number>>({})
 
 const canBuy = computed(() => {
-    return Object.values(buyVolumes.value).some(volume => (volume || 0) > 0)
+    return props.selectedPairs.every(pair => {
+        const volume = buyVolumes.value[pair.pair] || 0;
+        return volume > 0;
+    });
 })
 
+const handleCancel = () => {
+    errorHandler.clearErrors();
+    emit('hide');
+}
+
+const buySelectedPairs = () => {
+    if (!canBuy.value) {
+        errorHandler.clearErrors();
+        errorHandler.handleValidationError(
+            'Please enter valid volume values for all selected pairs'
+        );
+        return;
+    }
+
+    const validVolumes = Object.entries(buyVolumes.value).reduce((acc, [pair, volume]) => {
+        if (volume > 0) {
+            acc[pair] = volume;
+        }
+        return acc;
+    }, {} as Record<string, number>);
+
+    errorHandler.clearErrors();
+    emit('buy', validVolumes);
+    emit('hide');
+    buyVolumes.value = {};
+}
+
 const initializeBuyVolumes = () => {
+    errorHandler.clearErrors();
     buyVolumes.value = {};
     props.selectedPairs.forEach(pair => {
         buyVolumes.value[pair.pair] = 0;
     });
-}
-
-const buySelectedPairs = () => {
-    emit('buy', buyVolumes.value);
-    emit('hide');
-    buyVolumes.value = {};
 }
 
 watch(() => props.selectedPairs, (newPairs) => {
@@ -59,7 +92,10 @@ watch(() => props.selectedPairs, (newPairs) => {
     buyVolumes.value = newBuyVolumes;
 }, { deep: true });
 
+const visibleErrors = computed(() => (errorHandler.errors.value || []).filter((e: { message?: string }) => e.message));
+
 onUnmounted(() => {
+    errorHandler.clearErrors();
 })
 
 </script>
